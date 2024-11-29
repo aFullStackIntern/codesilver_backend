@@ -116,4 +116,81 @@ const login = asyncHandler(async (req, res) => {
     );
 });
 
-export { createAdmin, getAllAdmins, deleteAdmin, login };
+const updateAdmin = asyncHandler(async (req, res) => {
+  const admin = await Admin.findById(req.params.id);
+  if (!admin) {
+    throw new ApiError(400, "Admin not found");
+  }
+
+  const { email, username } = req.body;
+  if (!email && !username) {
+    throw new ApiError(400, "All the fields are empty!!!");
+  }
+
+  const updatedAdmin = await Admin.findByIdAndUpdate(
+    req.params.id,
+    { $set: req.body },
+    { new: true }
+  );
+
+  if (!updateAdmin) {
+    throw new ApiError(500, "SOmething went wrong while updating admin!!!");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Admin updated successfully!!!", updatedAdmin));
+});
+
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const admin = await Admin.findById(req.admin?._id);
+  const isPasswordCorrect = await admin.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old password");
+  }
+
+  admin.password = newPassword;
+  await admin.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfullly"));
+});
+
+const logoutAdmin = asyncHandler(async (req, res) => {
+  Admin.findByIdAndUpdate(
+    req.admin._id,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, "User logged out"));
+});
+
+export {
+  createAdmin,
+  getAllAdmins,
+  deleteAdmin,
+  login,
+  updateAdmin,
+  changePassword,
+  logoutAdmin,
+};
