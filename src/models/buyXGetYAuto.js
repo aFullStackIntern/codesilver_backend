@@ -34,12 +34,10 @@ const buyXGetYAutoSchema = new Schema(
       type: Number,
       default: 1,
     },
-
     availability: {
       type: "String",
       required: true,
     },
-
     combinations: {
       type: String,
     },

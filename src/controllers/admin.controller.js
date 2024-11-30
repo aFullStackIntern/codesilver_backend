@@ -86,9 +86,9 @@ const login = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No admin found!!!");
   }
 
-  const isCorrect = await admin.isPasswordCorrect(password);
+  const isValid = await admin.isPasswordCorrect(password);
 
-  if (!isCorrect) {
+  if (!isValid) {
     throw new ApiError(400, "Please enter the correct password!!!");
   }
 
