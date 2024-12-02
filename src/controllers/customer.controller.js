@@ -3,6 +3,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 
+import { Parser } from "json2csv";
+import csv from "csv-parser";
+import fs from "fs";
+
 const generateAccessAndRefreshTokens = async (customerId) => {
   try {
     const customer = await Customers.findById(customerId);
@@ -196,6 +200,153 @@ const logoutCustomer = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Customer logged out"));
 });
 
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const customer = await Customers.findById(req.customer._id);
+  const isPasswordCorrect = await customer.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old password");
+  }
+
+  customer.password = newPassword;
+  await customer.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Passwrod changed successfully!!!"));
+});
+
+const exportCustomers = asyncHandler(async (req, res) => {
+  const customers = await Customers.find();
+
+  if (!customers) {
+    throw new ApiError(
+      500,
+      "Something went wrong while fetching the customers!!!"
+    );
+  }
+
+  const fields = [
+    "_id",
+    "name",
+    "password",
+    "subscribed",
+    "address",
+    "totalOrders",
+    "contact",
+    "countryCode",
+    "email",
+    "totalAmount",
+  ];
+
+  const csvParser = new Parser({ fields });
+  const csv = csvParser.parse(customers);
+
+  // fs.writeFile("public/temp/customers.csv", csv, (err) => {
+  //   if (err) {
+  //     throw new ApiError(500, err);
+  //   }
+  // });
+
+  if (!csv) {
+    throw new ApiError(500, "Error creating csv!!!");
+  }
+
+  res.header("Content-Type", "text/csv");
+  res.attachment("customers.csv");
+  res.status(200).send(csv);
+});
+
+const importCustomers = asyncHandler(async (req, res) => {
+  const csvLocalPath = req.files?.csv[0]?.path;
+  // console.log(req.files);
+  if (!csvLocalPath) {
+    throw new ApiError(400, "Upload the file");
+  }
+
+  const requiredFields = [
+    "name",
+    "password",
+    "email",
+    "contact",
+    "address",
+    "countryCode",
+  ];
+  const booleanFields = ["subscribed"];
+  const numberFields = ["totalAmount"];
+  const arrayFields = ["totalOrders"];
+
+  const errors = [];
+  const results = [];
+
+  try {
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(csvLocalPath)
+        .pipe(csv())
+        .on("data", (row) => {
+          const missingFields = requiredFields.filter((field) => !row[field]);
+
+          if (missingFields.length > 0) {
+            errors.push({
+              row,
+              error: `Missing fields: ${missingFields.join(", ")}`,
+            });
+            return;
+          }
+
+          // Type conversion
+          booleanFields.forEach((field) => {
+            if (row[field] !== undefined) {
+              row[field] = row[field].toLowerCase() === "true";
+            }
+          });
+
+          numberFields.forEach((field) => {
+            if (row[field] !== undefined) {
+              const parsedValue = parseFloat(row[field]);
+              row[field] = isNaN(parsedValue) ? null : parsedValue;
+            }
+          });
+
+          arrayFields.forEach((field) => {
+            if (row[field] !== undefined && row[field] !== "") {
+              row[field] = row[field]
+                .split(",")
+                .map((item) => parseFloat(item.trim()))
+                .filter((item) => !isNaN(item));
+            }
+          });
+
+          results.push(row);
+        })
+        .on("end", resolve)
+        .on("error", reject);
+    });
+
+    const savedEntries = [];
+    for (const entry of results) {
+      const customer = await Customers.create(entry);
+      savedEntries.push(customer);
+    }
+
+    fs.unlinkSync(csvLocalPath);
+    if (errors) {
+      res.status(400).json({
+        message: "Some required fields are missing",
+        errors, // Include errors in the response if needed
+      });
+      res.status(200).json({
+        message: "Customers imported successfully",
+      });
+    }
+  } catch (error) {
+    fs.unlinkSync(csvLocalPath); // Clean up uploaded file
+    return res.status(500).json({ message: "Error processing CSV", error });
+  }
+});
+
 export {
   createCustomer,
   getAllCustomers,
@@ -203,4 +354,7 @@ export {
   deleteCustomer,
   login,
   logoutCustomer,
+  changePassword,
+  exportCustomers,
+  importCustomers,
 };

@@ -43,6 +43,7 @@ const customerSchema = new Schema(
     },
     totalAmount: {
       type: Number,
+      default: 0,
     },
     refreshToken: {
       type: String,
