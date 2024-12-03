@@ -14,7 +14,7 @@ const varientSchema = new Schema(
       type: [String],
     },
     prices: {
-      type: [String],
+      type: [Number],
     },
   },
   { timestamps: true }
