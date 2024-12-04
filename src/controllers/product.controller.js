@@ -27,8 +27,7 @@ const createProduct = asyncHandler(async (req, res) => {
     !price &&
     !noOfProducts &&
     !description &&
-    !CollectionId &&
-    !varients
+    !CollectionId & !varients
   ) {
     throw new ApiError(400, "Requried fields are missing!");
   }
