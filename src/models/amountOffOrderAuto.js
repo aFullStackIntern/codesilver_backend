@@ -14,10 +14,6 @@ const amountOffOrderAutoSchema = new Schema(
       type: Number,
       required: true,
     },
-    availablity: {
-      type: String,
-      required: true,
-    },
     minPurchaseRequirements: {
       type: String,
       required: true,
@@ -40,7 +36,7 @@ const amountOffOrderAutoSchema = new Schema(
   { timestamps: true }
 );
 
-export const amountOffOrderAuto = mongoose.model(
+export const AmountOffOrderAuto = mongoose.model(
   "AmountOffOrderAuto",
   amountOffOrderAutoSchema
 );

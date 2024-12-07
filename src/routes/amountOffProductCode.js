@@ -5,7 +5,7 @@ import {
   updateDiscount,
   getAllDiscounts,
   deleteDiscount,
-} from "../controllers/amountOffOrderCode.js";
+} from "../controllers/amountOffProductCode.js";
 
 const router = Router();
 router.route("/create").post(createDiscount);

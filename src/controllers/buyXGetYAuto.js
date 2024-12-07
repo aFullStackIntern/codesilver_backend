@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { buyXGetYAuto } from "../models/buyXGetYAuto.js";
+import { BuyXGetYAuto } from "../models/buyXGetYAuto.js";
 
 const createDiscount = asyncHandler(async (req, res) => {
   const {

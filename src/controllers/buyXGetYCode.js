@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { buyXGetYAuto } from "../models/buyXGetYAuto.js";
+import { BuyXGetYAuto } from "../models/buyXGetYAuto.js";
 
 const createDiscount = asyncHandler(async (req, res) => {
   const {
@@ -17,23 +17,21 @@ const createDiscount = asyncHandler(async (req, res) => {
     combinations,
     startTime,
     endTime,
-    channel,
   } = req.body;
 
   if (
-    code ||
-    discountValueType ||
-    discountValue ||
-    appliedTo ||
-    customerGetQnt ||
-    anyItemFrom ||
-    at ||
-    usesPerOrder ||
-    customersEligible ||
-    channel ||
-    combinations ||
-    startTime ||
-    endTime
+    !code ||
+    !discountValueType ||
+    !discountValue ||
+    !appliedTo ||
+    !customerGetQnt ||
+    !anyItemFrom ||
+    !at ||
+    !usesPerOrder ||
+    !customersEligible ||
+    !channel ||
+    !combinations ||
+    !startTime
   ) {
     throw new ApiError(400, "All fields are empty!!!");
   }

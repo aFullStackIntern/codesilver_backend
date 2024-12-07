@@ -39,9 +39,6 @@ const amountOffOrderCodeSchema = new Schema(
     endTime: {
       type: Date,
     },
-    channel: {
-      type: String,
-    },
   },
   { timestamps: true }
 );

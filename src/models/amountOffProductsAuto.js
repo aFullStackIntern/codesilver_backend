@@ -14,10 +14,6 @@ const amountOffPdtAutoSchema = new Schema(
       type: Number,
       required: true,
     },
-    availability: {
-      type: String,
-      required: true,
-    },
     appliedTo: {
       type: String,
       required: true,
@@ -43,7 +39,7 @@ const amountOffPdtAutoSchema = new Schema(
   { timestamps: true }
 );
 
-export const amountOffPdtAuto = mongoose.model(
+export const AmountOffPdtAuto = mongoose.model(
   "AmountOffPdtAuto",
   amountOffPdtAutoSchema
 );

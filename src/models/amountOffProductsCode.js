@@ -43,14 +43,11 @@ const amountOffPdtCodeSchema = new Schema(
     endTime: {
       type: Date,
     },
-    channel: {
-      type: String,
-    },
   },
   { timestamps: true }
 );
 
-export const amountOffPdtCode = mongoose.model(
+export const AmountOffPdtCode = mongoose.model(
   "AmountOffPdtCode",
   amountOffPdtCodeSchema
 );
