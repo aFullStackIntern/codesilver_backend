@@ -1,9 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 
-const discountSchema = new Schmea(
+const discountSchema = new Schema(
   {
     typeId: {
-      type: string,
+      type: String,
       required: true,
     },
     name: {

@@ -10,24 +10,22 @@ const createDiscount = asyncHandler(async (req, res) => {
     shippingRatesExclusion,
     minPurchaseRequirements,
     minPurchaseRequirementsValue,
-    availablity,
     combinations,
     startTime,
     endTime,
   } = req.body;
 
   if (
-    title ||
-    countriesCode ||
-    shippingRatesExclusion ||
-    minPurchaseRequirements ||
-    minPurchaseRequirementsValue ||
-    availablity ||
-    combinations ||
-    startTime ||
-    endTime
+    !title ||
+    !countriesCode ||
+    !shippingRatesExclusion ||
+    !minPurchaseRequirements ||
+    !minPurchaseRequirementsValue ||
+    !combinations ||
+    !startTime ||
+    !endTime
   ) {
-    throw new ApiError(400, "All fields are empty!!!");
+    throw new ApiError(400, "Fill the required fields!!!");
   }
 
   const discount = await FreeShippingAuto.create(req.body);
@@ -47,13 +45,13 @@ const getAllDiscounts = asyncHandler(async (req, res) => {
     );
   }
 
-  res.status(200).json(200, "Disconts fetched", discounts);
+  res.status(200).json(new ApiResponse(200, "Disconts fetched", discounts));
 });
 
 const updateDiscount = asyncHandler(async (req, res) => {
   const exists = await FreeShippingAuto.findOne({ _id: req.params.id });
   if (!exists) {
-    throw new ApiResponse(400, "No discount found!!!");
+    throw new ApiError(400, "No discount found!!!");
   }
 
   const {
@@ -62,21 +60,19 @@ const updateDiscount = asyncHandler(async (req, res) => {
     shippingRatesExclusion,
     minPurchaseRequirements,
     minPurchaseRequirementsValue,
-    availablity,
     combinations,
     startTime,
     endTime,
   } = req.body;
   if (
-    title &&
-    countriesCode &&
-    shippingRatesExclusion &&
-    minPurchaseRequirements &&
-    minPurchaseRequirementsValue &&
-    availablity &&
-    combinations &&
-    startTime &&
-    endTime
+    !title &&
+    !countriesCode &&
+    !shippingRatesExclusion &&
+    !minPurchaseRequirements &&
+    !minPurchaseRequirementsValue &&
+    !combinations &&
+    !startTime &&
+    !endTime
   ) {
     throw new ApiError(400, "All fields are empty!!!");
   }
@@ -105,7 +101,7 @@ const getDiscountById = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No discount found!!!");
   }
 
-  res.status(200).json(200, "Discount sent!!!", discount);
+  res.status(200).json(new ApiResponse(200, "Discount sent!!!", discount));
 });
 
 const deleteDiscount = asyncHandler(async (req, res) => {
@@ -114,7 +110,9 @@ const deleteDiscount = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No discount found!!!");
   }
 
-  const deletedDiscount = await FreeShippingAuto.findByIdAndDelete();
+  const deletedDiscount = await FreeShippingAuto.findByIdAndDelete(
+    req.params.id
+  );
   if (!deletedDiscount) {
     throw new ApiError(
       500,

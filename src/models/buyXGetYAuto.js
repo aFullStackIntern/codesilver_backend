@@ -6,11 +6,11 @@ const buyXGetYAutoSchema = new Schema(
       type: String,
       required: true,
     },
-    discountValueType: {
+    customerBuys: {
       type: String,
       required: true,
     },
-    discountValue: {
+    customerBuysQnt: {
       type: Number,
       required: true,
     },
@@ -26,17 +26,17 @@ const buyXGetYAutoSchema = new Schema(
       type: String,
       required: true,
     },
-    at: {
+    discountValueType: {
       type: String,
+      required: true,
+    },
+    discountValue: {
+      type: Number,
       required: true,
     },
     usesPerOrder: {
       type: Number,
       default: 1,
-    },
-    availability: {
-      type: "String",
-      required: true,
     },
     combinations: {
       type: String,

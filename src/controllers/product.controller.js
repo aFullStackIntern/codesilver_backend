@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Products } from "../models/product.model.js";
 import { Varients } from "../models/varient.model.js";
 import { Collections } from "../models/collection.model.js";
+import { Discounts } from "../models/discount.model.js";
 
 const createProduct = asyncHandler(async (req, res) => {
   const {
@@ -23,11 +24,13 @@ const createProduct = asyncHandler(async (req, res) => {
   } = req.body;
 
   if (
-    !name &&
-    !price &&
-    !noOfProducts &&
-    !description &&
-    !CollectionId & !varients
+    !name ||
+    !weight ||
+    !price ||
+    !noOfProducts ||
+    !description ||
+    !CollectionId ||
+    !varients
   ) {
     throw new ApiError(400, "Requried fields are missing!");
   }

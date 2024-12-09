@@ -6,13 +6,13 @@ import { BuyXGetYAuto } from "../models/buyXGetYAuto.js";
 const createDiscount = asyncHandler(async (req, res) => {
   const {
     title,
-    discountValueType,
-    discountValue,
-    availability,
+    customerBuys,
+    customerBuysQnt,
     appliedTo,
     customerGetQnt,
     anyItemFrom,
-    at,
+    discountValueType,
+    discountValue,
     usesPerOrder,
     combinations,
     startTime,
@@ -20,23 +20,23 @@ const createDiscount = asyncHandler(async (req, res) => {
   } = req.body;
 
   if (
-    title ||
-    discountValueType ||
-    discountValue ||
-    appliedTo ||
-    customerGetQnt ||
-    anyItemFrom ||
-    at ||
-    usesPerOrder ||
-    availability ||
-    combinations ||
-    startTime ||
-    endTime
+    !title ||
+    !customerBuys ||
+    !customerBuysQnt ||
+    !appliedTo ||
+    !customerGetQnt ||
+    !anyItemFrom ||
+    !discountValueType ||
+    !discountValue ||
+    !usesPerOrder ||
+    !combinations ||
+    !startTime ||
+    !endTime
   ) {
-    throw new ApiError(400, "All fields are empty!!!");
+    throw new ApiError(400, "Fill the required fields!!!");
   }
 
-  const discount = await buyXGetYAuto.create(req.body);
+  const discount = await BuyXGetYAuto.create(req.body);
   if (!discount) {
     throw new ApiError(500, "Something went wrong while creating the discount");
   }
@@ -45,7 +45,7 @@ const createDiscount = asyncHandler(async (req, res) => {
 });
 
 const getAllDiscounts = asyncHandler(async (req, res) => {
-  const discounts = await buyXGetYAuto.find();
+  const discounts = await BuyXGetYAuto.find();
   if (!discounts) {
     throw new ApiError(
       500,
@@ -53,47 +53,47 @@ const getAllDiscounts = asyncHandler(async (req, res) => {
     );
   }
 
-  res.status(200).json(200, "Disconts fetched", discounts);
+  res.status(200).json(new ApiResponse(200, "Disconts fetched", discounts));
 });
 
 const updateDiscount = asyncHandler(async (req, res) => {
-  const exists = await buyXGetYAuto.findOne({ _id: req.params.id });
+  const exists = await BuyXGetYAuto.findOne({ _id: req.params.id });
   if (!exists) {
-    throw new ApiResponse(400, "No discount found!!!");
+    throw new ApiError(400, "No discount found!!!");
   }
 
   const {
     title,
-    discountValueType,
-    discountValue,
-    availability,
+    customerBuys,
+    customerBuysQnt,
     appliedTo,
     customerGetQnt,
     anyItemFrom,
-    at,
+    discountValueType,
+    discountValue,
     usesPerOrder,
     combinations,
     startTime,
     endTime,
   } = req.body;
   if (
-    title &&
-    discountValueType &&
-    discountValue &&
-    appliedTo &&
-    customerGetQnt &&
-    anyItemFrom &&
-    at &&
-    usesPerOrder &&
-    availability &&
-    combinations &&
-    startTime &&
-    endTime
+    !title &&
+    !customerBuys &&
+    !customerBuysQnt &&
+    !appliedTo &&
+    !customerGetQnt &&
+    !anyItemFrom &&
+    !discountValueType &&
+    !discountValue &&
+    !usesPerOrder &&
+    !combinations &&
+    !startTime &&
+    !endTime
   ) {
     throw new ApiError(400, "All fields are empty!!!");
   }
 
-  const updatedDiscount = await buyXGetYAuto.findByIdAndUpdate(
+  const updatedDiscount = await BuyXGetYAuto.findByIdAndUpdate(
     req.params.id,
     { $set: req.body },
     { new: true }
@@ -112,21 +112,21 @@ const updateDiscount = asyncHandler(async (req, res) => {
 });
 
 const getDiscountById = asyncHandler(async (req, res) => {
-  const discount = await buyXGetYAuto.findOne({ _id: req.params.id });
+  const discount = await BuyXGetYAuto.findOne({ _id: req.params.id });
   if (!discount) {
     throw new ApiError(400, "No discount found!!!");
   }
 
-  res.status(200).json(200, "Discount sent!!!", discount);
+  res.status(200).json(new ApiResponse(200, "Discount sent!!!", discount));
 });
 
 const deleteDiscount = asyncHandler(async (req, res) => {
-  const discount = await buyXGetYAuto.findOne({ _id: req.params.id });
+  const discount = await BuyXGetYAuto.findOne({ _id: req.params.id });
   if (!discount) {
     throw new ApiError(400, "No discount found!!!");
   }
 
-  const deletedDiscount = await buyXGetYAuto.findByIdAndDelete();
+  const deletedDiscount = await BuyXGetYAuto.findByIdAndDelete(req.params.id);
   if (!deletedDiscount) {
     throw new ApiError(
       500,

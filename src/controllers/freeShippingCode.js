@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { FreeShippingCode } from "../models/freeShippingCode.js";
 
 const createDiscount = asyncHandler(async (req, res) => {
+  console.log(req.body);
   const {
     code,
     countriesCode,
@@ -18,18 +19,18 @@ const createDiscount = asyncHandler(async (req, res) => {
   } = req.body;
 
   if (
-    code ||
-    countriesCode ||
-    shippingRatesExclusion ||
-    minPurchaseRequirements ||
-    minPurchaseRequirementsValue ||
-    customersEligible ||
-    uses ||
-    combinations ||
-    startTime ||
-    endTime
+    !code ||
+    !countriesCode ||
+    !shippingRatesExclusion ||
+    !minPurchaseRequirements ||
+    !minPurchaseRequirementsValue ||
+    !customersEligible ||
+    !uses ||
+    !combinations ||
+    !startTime ||
+    !endTime
   ) {
-    throw new ApiError(400, "All fields are empty!!!");
+    throw new ApiError(400, "Fill all the required fields!!!");
   }
 
   const discount = await FreeShippingCode.create(req.body);
@@ -49,13 +50,13 @@ const getAllDiscounts = asyncHandler(async (req, res) => {
     );
   }
 
-  res.status(200).json(200, "Disconts fetched", discounts);
+  res.status(200).json(new ApiResponse(200, "Disconts fetched", discounts));
 });
 
 const updateDiscount = asyncHandler(async (req, res) => {
   const exists = await FreeShippingCode.findOne({ _id: req.params.id });
   if (!exists) {
-    throw new ApiResponse(400, "No discount found!!!");
+    throw new ApiError(400, "No discount found!!!");
   }
 
   const {
@@ -109,7 +110,7 @@ const getDiscountById = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No discount found!!!");
   }
 
-  res.status(200).json(200, "Discount sent!!!", discount);
+  res.status(200).json(new ApiResponse(200, "Discount sent!!!", discount));
 });
 
 const deleteDiscount = asyncHandler(async (req, res) => {
@@ -118,7 +119,9 @@ const deleteDiscount = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No discount found!!!");
   }
 
-  const deletedDiscount = await FreeShippingCode.findByIdAndDelete();
+  const deletedDiscount = await FreeShippingCode.findByIdAndDelete(
+    req.params.id
+  );
   if (!deletedDiscount) {
     throw new ApiError(
       500,

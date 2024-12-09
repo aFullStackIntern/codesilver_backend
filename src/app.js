@@ -26,9 +26,11 @@ import amountOffProductAutoRouter from "./routes/amountOffProductAuto.js";
 import amountOffOrderAutoRouter from "./routes/amountOffOrderAuto.js";
 import amountOffOrderCodeRouter from "./routes/amountOffOrderCode.js";
 import buyXGetYAutoRouter from "./routes/buyXGetYAuto.js";
-import buyXGetYCodeRouter from "./routes/buyXGetYAuto.js";
-import freeShippingCodeRouter from "./routes/freeShippingAuto.js";
+import buyXGetYCodeRouter from "./routes/buyXGetYCode.js";
+import freeShippingCodeRouter from "./routes/freeShippingCode.js";
 import freeShippingAutoRouter from "./routes/freeShippingAuto.js";
+import discountRouter from "./routes/discount.route.js";
+import rateRouter from "./routes/rate.router.js";
 
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/customer", customerRouter);
@@ -43,5 +45,7 @@ app.use("/api/v1/buyXGetYAuto", buyXGetYAutoRouter);
 app.use("/api/v1/buyXGetYCode", buyXGetYCodeRouter);
 app.use("/api/v1/freeShippingCode", freeShippingCodeRouter);
 app.use("/api/v1/freeShippingAuto", freeShippingAutoRouter);
+app.use("/api/v1/discount", discountRouter);
+app.use("/api/v1/rate", rateRouter);
 
 export default app;

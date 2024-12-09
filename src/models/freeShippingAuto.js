@@ -11,11 +11,7 @@ const freeShippingAutoSchema = new Schema(
       required: true,
     },
     shippingRatesExclusion: {
-      type: String,
-      required: true,
-    },
-    availablity: {
-      type: String,
+      type: Number,
       required: true,
     },
     minPurchaseRequirements: {
@@ -26,7 +22,6 @@ const freeShippingAutoSchema = new Schema(
       type: String,
       required: true,
     },
-
     combinations: {
       type: String,
     },
