@@ -2,12 +2,12 @@ import mongoose, { Schema } from "mongoose";
 
 const zoneSchema = new Schema(
   {
-    countryCode: {
-      type: String,
+    countryCodes: {
+      type: [String],
       required: true,
     },
-    country: {
-      type: String,
+    countries: {
+      type: [String],
       required: true,
     },
     rates: {

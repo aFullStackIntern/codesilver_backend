@@ -68,8 +68,10 @@ const deleteRate = asyncHandler(async (req, res) => {
 
   const deletedRate = await Rates.findByIdAndDelete(req.params.id);
   if (!deletedRate) {
-    throw new ApiError(400, "Rate deleted successfully!!!");
+    throw new ApiError(400, "Something went wrong while deleting the rate!!!");
   }
+
+  res.status(200).json(new ApiResponse(200, "Rate deleted"));
 });
 
 export { createRate, getAllRates, updateRates, getRateById, deleteRate };

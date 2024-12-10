@@ -5,11 +5,15 @@ const cartSchema = new Schema(
     products: {
       type: [mongoose.Schema.ObjectId],
       ref: "Product",
-      requried: true,
+      // requried: true,
     },
     discountId: {
       type: mongoose.Schema.ObjectId,
       ref: "Discount",
+    },
+    customerId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Customer",
     },
     notes: {
       type: String,

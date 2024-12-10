@@ -36,6 +36,7 @@ const orderSchema = new Schema(
     },
     isAbandoned: {
       type: Boolean,
+      default: false,
     },
     isCompleted: {
       type: Boolean,
@@ -48,12 +49,16 @@ const orderSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isCancelled: {
+      type: Boolean,
+      default: false,
+    },
     isDelivered: {
       type: Boolean,
       default: false,
     },
     products: {
-      type: mongoose.Schema.ObjectId,
+      type: [mongoose.Schema.ObjectId],
       ref: "Product",
     },
   },
