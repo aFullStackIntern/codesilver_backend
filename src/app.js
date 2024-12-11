@@ -33,7 +33,8 @@ import discountRouter from "./routes/discount.route.js";
 import rateRouter from "./routes/rate.router.js";
 import shippingRouter from "./routes/shipping.route.js";
 import cartRouter from "./routes/cart.route.js";
-import OrderRouter from "./routes/order.route.js";
+import orderRouter from "./routes/order.route.js";
+import productRouter from "./routes/product.route.js";
 
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/customer", customerRouter);
@@ -53,5 +54,6 @@ app.use("/api/v1/rate", rateRouter);
 app.use("/api/v1/shipping", shippingRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/product", productRouter);
 
 export default app;
