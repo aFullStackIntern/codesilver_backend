@@ -1,6 +1,11 @@
 import { Router } from "express";
 import {
   createProduct,
+  deleteProduct,
+  getAllProducts,
+  getProductsByCollectionId,
+  getProductsByCollectionName,
+  saveDraft,
   updateImage,
   updateMedium,
   updateProduct,
@@ -44,5 +49,10 @@ router.route("/update-medium/:id").post(
 );
 
 router.route("/update/:id").post(updateProduct);
+router.route("/get-all").get(getAllProducts);
+router.route("/get-by-collection-name").get(getProductsByCollectionName);
+router.route("/get-by-collection-id").get(getProductsByCollectionId);
+router.route("/delete/:id").get(deleteProduct);
+router.route("/save-draft/:id").get(saveDraft);
 
 export default router;

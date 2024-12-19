@@ -10,6 +10,10 @@ const reviewSchema = new Schema(
       type: Number,
       required: true,
     },
+    status: {
+      type: Boolean,
+      default: true,
+    },
     customerId: {
       type: mongoose.Schema.ObjectId,
       ref: "Customer",

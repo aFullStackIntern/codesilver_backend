@@ -8,23 +8,6 @@ import { Collections } from "../models/collection.model.js";
 import { Discounts } from "../models/discount.model.js";
 import { Reviews } from "../models/review.model.js";
 
-const setReviews = async (productId) => {
-  const reviewData = await Reviews.find({ productId });
-
-  if (!reviewData) {
-    return 0;
-  }
-
-  const len = reviewData.length;
-  const sum = 0;
-
-  for (let i = 0; i < len; i++) {
-    sum += reviewData[i].rating;
-  }
-
-  return sum / len;
-};
-
 const createProduct = asyncHandler(async (req, res) => {
   const {
     weight,
@@ -246,10 +229,122 @@ const updateProduct = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Product updated!!!", updatedProduct));
 });
 
+const getAllProducts = asyncHandler(async (req, res) => {
+  const products = await Products.find();
+  if (!products) {
+    throw new ApiError(
+      500,
+      "Something went wrong while fetching the products!!!"
+    );
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Products fetched successfully!!!", products));
+});
+
+const getProductsByCollectionName = asyncHandler(async (req, res) => {
+  const { collectionName } = req.query;
+  if (!collectionName) {
+    throw new ApiError(400, "Collection name is required!!!");
+  }
+
+  const collection = await Collections.findOne({ title: collectionName });
+  if (!collection) {
+    throw new ApiError(400, "Collection not found!!!");
+  }
+
+  const products = await Products.find({ collectionId: collection._id });
+  if (!products) {
+    throw new ApiError(
+      500,
+      "Something went wrong while fetching the products!!!"
+    );
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Products fetched successfully!!!", products));
+});
+
+const getProductsByCollectionId = asyncHandler(async (req, res) => {
+  const { id } = req.query;
+  if (!id) {
+    throw new ApiError(400, "collection id is required!!!");
+  }
+  const collection = await Collections.findOne({ _id: id });
+  if (!collection) {
+    throw new ApiError(400, "Collection not found!!!");
+  }
+
+  const products = await Products.find({ collectionId: collection._id });
+  if (!products) {
+    throw new ApiError(
+      500,
+      "Something went wrong while fetching the products!!!"
+    );
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Products fetched successfully!!!", products));
+});
+
+const deleteProduct = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new ApiError(400, "Id is required!!!");
+  }
+
+  const product = await Products.findOne({ _id: id });
+  if (!product) {
+    throw new ApiError(400, "No product found!!!");
+  }
+
+  const deletedProduct = await Products.findByIdAndDelete(product._id);
+  if (!deletedProduct) {
+    throw new ApiError(500, "Something went wrong while deleting the product");
+  }
+
+  res.status(200).json(new ApiResponse(200, "Product deleted successfully!!!"));
+});
+
+const saveDraft = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const product = await Products.findOne({ _id: id });
+  if (!product) {
+    throw new ApiError(400, "Product not found");
+  }
+
+  const updatedProduct = await Products.findByIdAndUpdate(
+    id,
+    { $set: { isDraft: false } },
+    { new: true }
+  );
+
+  if (!updatedProduct) {
+    throw new ApiError(
+      500,
+      "Something went wrong while updating the product!!!"
+    );
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Product updated successfully!!!", updatedProduct)
+    );
+});
+
 export {
+  saveDraft,
   createProduct,
   updateReviews,
   updateImage,
   updateMedium,
   updateProduct,
+  getAllProducts,
+  getProductsByCollectionName,
+  getProductsByCollectionId,
+  deleteProduct,
 };
