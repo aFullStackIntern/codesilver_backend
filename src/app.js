@@ -36,6 +36,8 @@ import cartRouter from "./routes/cart.route.js";
 import orderRouter from "./routes/order.route.js";
 import productRouter from "./routes/product.route.js";
 import reviewRouter from "./routes/review.route.js";
+import commentRouter from "./routes/comment.route.js";
+import wishlistRouter from "./routes/wishlist.route.js";
 
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/customer", customerRouter);
@@ -57,5 +59,7 @@ app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/product", productRouter);
 app.use("/api/v1/review", reviewRouter);
+app.use("/api/v1/comment", commentRouter);
+app.use("/api/v1/wishlist", wishlistRouter);
 
 export default app;
