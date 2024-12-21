@@ -22,11 +22,13 @@ const setReviews = async (productId) => {
 };
 
 const createReview = asyncHandler(async (req, res) => {
-  const { review, rating, customerId, productId } = req.body;
+  const { review, rating, productId } = req.body;
 
-  if (!review || !rating || !customerId || !productId) {
+  if (!review || !rating || !productId) {
     throw new ApiError(400, "Some fields are missing!!!");
   }
+
+  const customerId = req.customer._id;
 
   const existingReview = await Reviews.findOne({ customerId });
   if (existingReview) {

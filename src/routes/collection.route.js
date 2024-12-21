@@ -8,10 +8,12 @@ import {
   updateCollection,
   updateImage,
 } from "../controllers/collection.controller.js";
+import { verifyAdmin } from "../middlewares/adminAuth.middleware.js";
 
 const router = Router();
 
 router.route("/create").post(
+  verifyAdmin,
   uploadImage.fields([
     {
       name: "image",
@@ -21,6 +23,7 @@ router.route("/create").post(
   createCollection
 );
 router.route("/update-image/:id").post(
+  verifyAdmin,
   uploadImage.fields([
     {
       name: "image",
@@ -31,7 +34,7 @@ router.route("/update-image/:id").post(
 );
 router.route("/get-all").get(getAllCollections);
 router.route("/get-by-title").get(getByTitle);
-router.route("/delete/:id").get(deleteCollection);
-router.route("/update/:id").post(updateCollection);
+router.route("/delete/:id").get(verifyAdmin, deleteCollection);
+router.route("/update/:id").post(verifyAdmin, updateCollection);
 
 export default router;

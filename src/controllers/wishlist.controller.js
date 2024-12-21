@@ -2,6 +2,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Wishlist } from "../models/wishlist.model.js";
+import mongoose from "mongoose";
 
 const createWishlist = asyncHandler(async (req, res) => {
   const { customerId, products } = req.body;
@@ -60,9 +61,15 @@ const addProduct = asyncHandler(async (req, res) => {
     }
   }
 
+  const productObjectId = new mongoose.Types.ObjectId(productId);
+  if (wishlist.products.some((id) => id.equals(productObjectId))) {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Product already exists!!!", wishlist));
+  }
+
   const updatedProducts = wishlist.products;
   updatedProducts.push(productId);
-
   const updatedWishlist = await Wishlist.findByIdAndUpdate(
     wishlist._id,
     { $set: { products: updatedProducts } },

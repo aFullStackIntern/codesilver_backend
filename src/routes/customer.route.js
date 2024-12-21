@@ -19,11 +19,11 @@ const router = Router();
 router.route("/create").post(createCustomer);
 router.route("/logout").get(verifyCustomer, logoutCustomer);
 router.route("/login").post(login);
-router.route("/update/:id").post(updateCustomer);
-router.route("/get-all").get(getAllCustomers);
+router.route("/update/:id").post(verifyCustomer, updateCustomer);
+router.route("/get-all").get(verifyAdmin, getAllCustomers);
 router.route("/delete/:id").get(deleteCustomer);
 router.route("/change-password/:id").post(verifyCustomer, changePassword);
-router.route("/export-customers").get(exportCustomers);
+router.route("/export-customers").get(verifyAdmin, exportCustomers);
 router
   .route("/import-customers")
   .post(

@@ -43,7 +43,7 @@ const createCart = asyncHandler(async (req, res) => {
 });
 
 const addProducts = asyncHandler(async (req, res) => {
-  const cart = await Cart.findOne({ customerId: req.params.id });
+  const cart = await Cart.findOne({ customerId: req.customer.id });
   if (!cart) {
     throw new ApiError(400, "Cart not found!!!");
   }
@@ -68,7 +68,7 @@ const addProducts = asyncHandler(async (req, res) => {
 });
 
 const getCart = asyncHandler(async (req, res) => {
-  const cart = await Cart.findOne({ customerId: req.params.id });
+  const cart = await Cart.findOne({ customerId: req.cutomer.id });
   if (!cart) {
     throw new ApiError(400, "Cart not found!!!");
   }

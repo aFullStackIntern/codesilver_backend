@@ -57,14 +57,14 @@ const getAllOrders = asyncHandler(async (req, res) => {
 });
 
 const getOrders = asyncHandler(async (req, res) => {
-  const orders = await Orders.find({ customerId: req.params.id });
+  const orders = await Orders.find({ customerId: req.customer._id });
   if (orders.length === 0) {
     throw new ApiError(400, "No orders found!!!");
   }
 });
 
 const updateProgress = asyncHandler(async (req, res) => {
-  const order = await Orders.findOne({ _id: req.params.id });
+  const order = await Orders.findOne({ _id: req.customer._id });
   if (!order) {
     throw new ApiError(400, "Order not found!!!");
   }
@@ -75,7 +75,7 @@ const updateProgress = asyncHandler(async (req, res) => {
   }
 
   const updatedOrder = await Orders.findByIdAndUpdate(
-    req.params.id,
+    req.customer._id,
     { $set: { progress } },
     { new: true }
   );

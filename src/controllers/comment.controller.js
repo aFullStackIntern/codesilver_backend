@@ -7,14 +7,16 @@ import { Blogs } from "../models/blog.model.js";
 import { Customers } from "../models/customer.model.js";
 
 const createComment = asyncHandler(async (req, res) => {
-  const { comment, reviewId, blogId, customerId } = req.body;
-  if (!comment || !customerId) {
+  const { comment, reviewId, blogId } = req.body;
+  if (!comment) {
     throw new ApiError(400, "Fill all the required fields!!!");
   }
 
   if (!blogId && !reviewId) {
     throw new ApiError(400, "Blog Id or Review Id is missing!!!");
   }
+
+  const customerId = req.customer._id;
 
   const createdComment = await Comments.create({
     comment,

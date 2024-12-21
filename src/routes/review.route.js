@@ -7,14 +7,16 @@ import {
   updateReviewStatus,
 } from "../controllers/review.controller.js";
 import { Router } from "express";
+import { verifyCustomer } from "../middlewares/customerAuth.middleware.js";
+import { verifyAdmin } from "../middlewares/adminAuth.middleware.js";
 
 const router = Router();
 
-router.route("/create").post(createReview);
-router.route("/delete/:id").get(deleteReview);
+router.route("/create").post(verifyCustomer, createReview);
+router.route("/delete/:id").get(verifyAdmin, deleteReview);
 router.route("/get-product-reviews/:productId").get(getProductReviews);
 router.route("/get-customer-reviews/:customerId").get(getCustomerReviews);
 router.route("/change-status/:id").get(updateReviewStatus);
-router.route("/get-all").get(getAllReviews);
+router.route("/get-all").get(verifyAdmin, getAllReviews);
 
 export default router;

@@ -12,13 +12,15 @@ import {
   fulfillOrder,
   deleteOrder,
 } from "../controllers/order.controller.js";
+import { verifyAdmin } from "../middlewares/adminAuth.middleware.js";
+import { verifyCustomer } from "../middlewares/customerAuth.middleware.js";
 
 const router = Router();
 
 router.route("/create").post(createOrder);
-router.route("/get-all/:id").get(getAllOrders);
-router.route("/get/:id").get(getOrders);
-router.route("/update-progress/:id").post(updateProgress);
+router.route("/get-all").get(verifyAdmin, getAllOrders);
+router.route("/get").get(verifyCustomer, getOrders);
+router.route("/update-progress").post(verifyCustomer, updateProgress);
 router.route("/update-payment/:id").post(updatePayment);
 router.route("/update-delivery-status/:id").post(updateDeliveryStatus);
 router.route("/cancel-order/:id").post(cancelOrder);

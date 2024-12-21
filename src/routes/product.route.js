@@ -11,10 +11,12 @@ import {
   updateProduct,
 } from "../controllers/product.controller.js";
 import { uploadImage } from "../middlewares/multerImage.middleware.js";
+import { verifyAdmin } from "../middlewares/adminAuth.middleware.js";
 
 const router = Router();
 
 router.route("/create").post(
+  verifyAdmin,
   uploadImage.fields([
     {
       name: "image",
@@ -29,6 +31,7 @@ router.route("/create").post(
 );
 
 router.route("/update-image/:id").post(
+  verifyAdmin,
   uploadImage.fields([
     {
       name: "image",
@@ -39,6 +42,7 @@ router.route("/update-image/:id").post(
 );
 
 router.route("/update-medium/:id").post(
+  verifyAdmin,
   uploadImage.fields([
     {
       name: "medium",
@@ -48,11 +52,11 @@ router.route("/update-medium/:id").post(
   updateMedium
 );
 
-router.route("/update/:id").post(updateProduct);
+router.route("/update/:id").post(verifyAdmin, updateProduct);
 router.route("/get-all").get(getAllProducts);
 router.route("/get-by-collection-name").get(getProductsByCollectionName);
 router.route("/get-by-collection-id").get(getProductsByCollectionId);
-router.route("/delete/:id").get(deleteProduct);
-router.route("/save-draft/:id").get(saveDraft);
+router.route("/delete/:id").get(verifyAdmin, deleteProduct);
+router.route("/save-draft/:id").get(verifyAdmin, saveDraft);
 
 export default router;
