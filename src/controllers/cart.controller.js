@@ -3,6 +3,7 @@ import { Products } from "../models/product.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { Gifts } from "../models/gift.model.js";
 import mongoose from "mongoose";
 
 const createCart = asyncHandler(async (req, res) => {
@@ -13,7 +14,7 @@ const createCart = asyncHandler(async (req, res) => {
   const {
     discountId,
     notes,
-    isGift,
+    giftId,
     discountCode,
     totalWt,
     eta,
@@ -27,16 +28,27 @@ const createCart = asyncHandler(async (req, res) => {
 
   const customerId = req.customer._id;
 
+  let finalPrice = 0;
+
+  if (giftId) {
+    const gift = await Gifts.findOne({ _id: giftId });
+    if (!gift) {
+      throw new ApiError(400, "Gift not found!!!");
+    }
+
+    finalPrice += gift.price;
+  }
+
   const cart = await Cart.create({
     customerId,
     discountId: discountId || undefined,
-    isGift,
+    giftId: giftId || undefined,
     products: [],
     notes,
     discountCode,
     price: 0,
     totalWt: 0,
-    finalPrice: 0,
+    finalPrice,
     eta,
     countryCode,
     address,
@@ -142,4 +154,44 @@ const deleteCart = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "Cart deleted successfully!!!"));
 });
 
-export { createCart, addProducts, removeProduct, getCart, deleteCart };
+const updateGift = asyncHandler(async (req, res) => {
+  const cart = await Cart.findOne({ customerId: req.customer._id });
+  if (!cart) {
+    throw new ApiError(400, "Cart not found!!!");
+  }
+
+  let finalPrice = cart.finalPrice;
+
+  const oldGift = await Gifts.findOne({ _id: cart.giftId });
+
+  finalPrice -= oldGift.price;
+
+  const newGiftId = req.query.id;
+  if (!newGiftId) {
+    throw new ApiError(400, "Gift id not found!!!");
+  }
+
+  const gift = await Gifts.findOne({ _id: newGiftId });
+  if (!gift) {
+    throw new ApiError(400, "Gift not found!!!");
+  }
+
+  finalPrice += gift.price;
+
+  const updatedCart = await Cart.findOneAndUpdate(
+    cart._id,
+    { giftId: gift._id, finalPrice },
+    { new: true }
+  );
+
+  res.status(200).json(new ApiResponse(200, "Cart updated!!!", updatedCart));
+});
+
+export {
+  createCart,
+  addProducts,
+  removeProduct,
+  getCart,
+  deleteCart,
+  updateGift,
+};

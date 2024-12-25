@@ -95,4 +95,43 @@ const deleteGift = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "Gift deleted!!!"));
 });
 
-export { createGift, getAllGifts, getById, updateGifts, deleteGift };
+const updateImage = asyncHandler(async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    throw new ApiError(400, "Id is required!!!");
+  }
+
+  const images = [];
+  for (let i = 0; i < req.files.images.length; i++) {
+    const image = await uploadOnCloudinary(req.files.images[i].path);
+    if (!image) {
+      throw new ApiError(
+        500,
+        `Something went wrong while uploadin the image: ${i}`
+      );
+    }
+    images.push(image.url);
+  }
+
+  const updatedGift = await Gifts.findByIdAndUpdate(
+    id,
+    { $set: { images } },
+    { new: true }
+  );
+  if (!updatedGift) {
+    throw new ApiError(500, "Something went wrong while updating the gift");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Images changed successfully!!!", updatedGift));
+});
+
+export {
+  createGift,
+  getAllGifts,
+  getById,
+  updateGifts,
+  deleteGift,
+  updateImage,
+};

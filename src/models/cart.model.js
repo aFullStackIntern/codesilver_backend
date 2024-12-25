@@ -11,13 +11,9 @@ const cartSchema = new Schema(
       type: mongoose.Schema.ObjectId,
       ref: "Discount",
     },
-    isGift: {
-      type: Boolean,
-      default: false,
-    },
-    giftPrice: {
-      type: Number,
-      default: 20,
+    giftId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Gift",
     },
     customerId: {
       type: mongoose.Schema.ObjectId,
