@@ -7,6 +7,8 @@ import { Varients } from "../models/varient.model.js";
 import { Collections } from "../models/collection.model.js";
 import { Discounts } from "../models/discount.model.js";
 import { Reviews } from "../models/review.model.js";
+import { AmountOffPdtCode } from "../models/amountOffProductsCode.js";
+import { AmountOffPdtAuto } from "../models/amountOffProductsAuto.js";
 
 const createProduct = asyncHandler(async (req, res) => {
   const {
@@ -336,6 +338,56 @@ const saveDraft = asyncHandler(async (req, res) => {
     );
 });
 
+const addDiscount = asyncHandler(async (req, res) => {
+  const { discountId, productId } = req.body;
+  if (!productId) {
+    throw new ApiError(400, "Product id is required!!!");
+  }
+
+  if (!discountId) {
+    throw new ApiError(400, "Discount id is required!!!");
+  }
+
+  const product = await Products.findOne({ _id: productId });
+  if (!product) {
+    throw new ApiError(400, "No product found!!!");
+  }
+
+  const discount = await Discounts.findOne({ _id: discountId });
+  if (!discount) {
+    throw new ApiError(400, "No discount found!!!");
+  }
+
+  let discountedPrice = 0;
+  let price = product.price;
+
+  if (discount.method === "Code") {
+    const productDiscount = await AmountOffPdtCode.findOne({ _id: typeId });
+    if (!productDiscount) {
+      throw new ApiError(
+        500,
+        "Something went wrong while fetching the product discount!!!"
+      );
+    }
+
+    if (productDiscount.uses > 0) {
+      if (productDiscount.discountValueType === "Percent") {
+        discountedPrice = price - price * 0.01 * productDiscount.discountValue;
+      } else if (productDiscount.discountValueType === "Amount") {
+        discountedPrice = price - productDiscount.discountValue;
+      }
+    }
+  } else {
+    const productDiscount = await AmountOffPdtAuto.findOne({ _id: typeId });
+    if (!productDiscount) {
+      throw new ApiError(
+        500,
+        "Something went wrong while fetching the product discount!!!"
+      );
+    }
+  }
+});
+
 export {
   saveDraft,
   createProduct,
@@ -347,4 +399,5 @@ export {
   getProductsByCollectionName,
   getProductsByCollectionId,
   deleteProduct,
+  addDiscount,
 };

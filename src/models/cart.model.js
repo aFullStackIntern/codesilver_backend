@@ -15,6 +15,13 @@ const cartSchema = new Schema(
       type: mongoose.Schema.ObjectId,
       ref: "Gift",
     },
+    hamperId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Hamper",
+    },
+    hamperMessage: {
+      type: String,
+    },
     customerId: {
       type: mongoose.Schema.ObjectId,
       ref: "Customer",

@@ -12,9 +12,9 @@ const router = Router();
 
 router.route("/create").post(createHamper);
 router.route("/update").post(updateHamper);
-router.route("/delete").post(deleteHamper);
+router.route("/delete").get(deleteHamper);
 router.route("/get-all").get(getAllHampers);
-router.route("/get-by-id").post(getHamperById);
-router.route("/get-by-name").post(getHamperByName);
+router.route("/get-by-id").get(getHamperById);
+router.route("/get-by-name").get(getHamperByName);
 
 export default router;

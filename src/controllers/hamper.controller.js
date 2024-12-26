@@ -100,12 +100,12 @@ const deleteHamper = asyncHandler(async (req, res) => {
 });
 
 const getHamperByName = asyncHandler(async (req, res) => {
-  const { name } = req.query.name;
+  const name = req.query.name;
   if (!name) {
     throw new ApiError(400, "Name is required!!!");
   }
 
-  const hamper = await Hampers.findOne({ name });
+  const hamper = await Hampers.findOne({ name: name });
   if (!hamper) {
     throw new ApiError(
       500,

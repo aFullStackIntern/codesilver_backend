@@ -4,8 +4,16 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createDiscount = asyncHandler(async (req, res) => {
-  const { typeId, name, description, status, method, useFrequency } = req.body;
-  if (!typeId || !name || !description || !method || !useFrequency) {
+  const { typeId, typeName, name, description, status, method, useFrequency } =
+    req.body;
+  if (
+    !typeId ||
+    !name ||
+    !description ||
+    !method ||
+    !useFrequency ||
+    !typeName
+  ) {
     throw new ApiError(400, "Fill all the required fields!!!");
   }
 
@@ -38,8 +46,16 @@ const updateDiscounts = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No discount found!!!");
   }
 
-  const { typeId, name, description, status, method, useFrequency } = req.body;
-  if (!typeId && !name && !description && !method && !useFrequency) {
+  const { typeId, typeName, name, description, status, method, useFrequency } =
+    req.body;
+  if (
+    !typeId &&
+    !name &&
+    !description &&
+    !method &&
+    !useFrequency &&
+    !typeName
+  ) {
     throw new ApiError(400, "Fill all the required fields!!!");
   }
 

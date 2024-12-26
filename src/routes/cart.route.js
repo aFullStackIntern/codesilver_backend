@@ -6,6 +6,9 @@ import {
   deleteCart,
   removeProduct,
   updateGift,
+  addHamper,
+  removeHamper,
+  changeHamper,
 } from "../controllers/cart.controller.js";
 import { verifyCustomer } from "../middlewares/customerAuth.middleware.js";
 
@@ -17,5 +20,8 @@ router.route("/delete").get(verifyCustomer, deleteCart);
 router.route("/add-products").post(verifyCustomer, addProducts);
 router.route("/remove-products").post(verifyCustomer, removeProduct);
 router.route("/update-gift").post(verifyCustomer, updateGift);
+router.route("/add-hamper").get(verifyCustomer, addHamper);
+router.route("/remove-hamper").get(verifyCustomer, removeHamper);
+router.route("/change-hamper").get(verifyCustomer, changeHamper);
 
 export default router;

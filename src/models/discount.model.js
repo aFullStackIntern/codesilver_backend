@@ -6,6 +6,11 @@ const discountSchema = new Schema(
       type: String,
       required: true,
     },
+    typeName: {
+      type: String,
+      required: true,
+      enum: ["Product", "Order", "Shipping", "BuyGet"],
+    },
     name: {
       type: String,
       required: true,

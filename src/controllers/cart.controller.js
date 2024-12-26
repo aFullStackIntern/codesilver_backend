@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Gifts } from "../models/gift.model.js";
 import mongoose from "mongoose";
+import { Hampers } from "../models/hamper.model.js";
 
 const createCart = asyncHandler(async (req, res) => {
   const exists = await Cart.findOne({ customerId: req.customer._id });
@@ -13,9 +14,11 @@ const createCart = asyncHandler(async (req, res) => {
   }
   const {
     discountId,
+    hamperId,
     notes,
     giftId,
     discountCode,
+    hamperMessage,
     totalWt,
     eta,
     countryCode,
@@ -27,7 +30,6 @@ const createCart = asyncHandler(async (req, res) => {
   }
 
   const customerId = req.customer._id;
-
   let finalPrice = 0;
 
   if (giftId) {
@@ -35,14 +37,28 @@ const createCart = asyncHandler(async (req, res) => {
     if (!gift) {
       throw new ApiError(400, "Gift not found!!!");
     }
-
     finalPrice += gift.price;
+  }
+
+  if (hamperId) {
+    const hamper = await Hampers.findOne({ _id: cart.hamperId });
+    if (!hamper) {
+      throw new ApiError(400, "No hamper found!!!");
+    }
+    const hamperPrice = hamper.price;
+    finalPrice += hamperPrice;
+  }
+
+  if (!hamperId) {
+    hamperMessage = undefined;
   }
 
   const cart = await Cart.create({
     customerId,
     discountId: discountId || undefined,
     giftId: giftId || undefined,
+    hamperId: hamperId || undefined,
+    hamperMessage: hamperMessage || undefined,
     products: [],
     notes,
     discountCode,
@@ -83,7 +99,13 @@ const addProducts = asyncHandler(async (req, res) => {
 
   const updatedCart = await Cart.findByIdAndUpdate(
     cart._id,
-    { $set: { products: newProducts, price: newPrice } },
+    {
+      $set: {
+        products: newProducts,
+        price: newPrice,
+        hamperMessage: message || undefined,
+      },
+    },
     { new: true }
   );
 
@@ -118,6 +140,7 @@ const removeProduct = asyncHandler(async (req, res) => {
       newPrice = newPrice - product.price;
     }
   }
+
   const updatedCart = await Cart.findByIdAndUpdate(
     cart._id,
     {
@@ -187,6 +210,117 @@ const updateGift = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "Cart updated!!!", updatedCart));
 });
 
+const addHamper = asyncHandler(async (req, res) => {
+  const cart = await Cart.findOne({ customerId: req.customer._id });
+  if (!cart) {
+    throw new ApiError(400, "Cart not found!!!");
+  }
+
+  let finalPrice = cart.finalPrice;
+
+  const { hamperId } = req.query;
+  if (!hamperId) {
+    throw new ApiError(400, "Hamper id is required!!!");
+  }
+
+  const hamper = await Hampers.findOne({ _id: hamperId });
+  if (!hamper) {
+    throw new ApiError(400, "No hamper found!!!");
+  }
+
+  const hamperPrice = hamper.price;
+
+  finalPrice += hamperPrice;
+
+  const updatedCart = await Cart.findByIdAndUpdate(
+    cart._id,
+    {
+      $set: { hamperId: hamperId, finalPrice },
+    },
+    { new: true }
+  );
+  if (!updatedCart) {
+    throw new ApiError(500, "Something went wrong while updating the cart!!!");
+  }
+
+  res.status(200).json(new ApiResponse(200, "Cart updated!!!", updatedCart));
+});
+
+const removeHamper = asyncHandler(async (req, res) => {
+  const cart = await Cart.findOne({ customerId: req.customer._id });
+  if (!cart) {
+    throw new ApiError(400, "Cart not found!!!");
+  }
+
+  let finalPrice = cart.finalPrice;
+
+  const hamper = await Hampers.findOne({ _id: cart.hamperId });
+  if (!hamper) {
+    throw new ApiError(400, "No hamper found!!!");
+  }
+
+  const hamperPrice = hamper.price;
+
+  finalPrice -= hamperPrice;
+
+  const updatedCart = await Cart.findByIdAndUpdate(
+    cart._id,
+    {
+      $set: { hamperId: undefined, finalPrice },
+    },
+    { new: true }
+  );
+  if (!updatedCart) {
+    throw new ApiError(500, "Something went wrong while updating the cart!!!");
+  }
+
+  res.status(200).json(new ApiResponse(200, "Cart updated!!!", updatedCart));
+});
+
+const changeHamper = asyncHandler(async (req, res) => {
+  const { hamperId } = req.query;
+  if (!hamperId) {
+    throw new ApiError(400, "Hamper id is required!!!");
+  }
+
+  const newHamper = await Hampers.findOne({ _id: hamperId });
+  if (!newHamper) {
+    throw new ApiError(
+      500,
+      "Something went wrong while fetching the hamper!!!"
+    );
+  }
+
+  const cart = await Cart.findOne({ customerId: req.customer._id });
+  if (!cart) {
+    throw new ApiError(400, "Cart not found!!!");
+  }
+
+  let finalPrice = cart.finalPrice;
+
+  const hamper = await Hampers.findOne({ _id: cart.hamperId });
+  if (!hamper) {
+    throw new ApiError(400, "No hamper found!!!");
+  }
+
+  const hamperPrice = hamper.price;
+
+  finalPrice = finalPrice - hamperPrice + newHamper.price;
+
+  const updatedCart = await Cart.findByIdAndUpdate(
+    cart._id,
+    {
+      $set: { hamperId, finalPrice },
+    },
+    { new: true }
+  );
+  if (!updatedCart) {
+    throw new ApiError(500, "Something went wrong while updating the cart!!!");
+  }
+
+  res.status(200).json(new ApiResponse(200, "Hamper changed!!!", updatedCart));
+});
+
 export {
   createCart,
   addProducts,
@@ -194,4 +328,7 @@ export {
   getCart,
   deleteCart,
   updateGift,
+  addHamper,
+  removeHamper,
+  changeHamper,
 };
