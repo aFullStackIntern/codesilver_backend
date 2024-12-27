@@ -1,3 +1,4 @@
+import { Discounts } from "../models/discount.model.js";
 import { Orders } from "../models/order.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -15,6 +16,7 @@ const createOrder = asyncHandler(async (req, res) => {
     notes,
     isDraft,
     isAbandoned,
+    discountedAmount,
     isCompleted,
     isPaid,
     isFullfilled,
@@ -271,6 +273,59 @@ const deleteOrder = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json(new ApiResponse(200, "Order deleted successfully!!!"));
+});
+
+const addDiscount = asyncHandler(async (req, res) => {
+  const { discountId, orderId } = req.body;
+  if (!discountId || !orderId) {
+    throw new ApiError(400, "Discount id or order id is missing!!!");
+  }
+
+  const discount = await Discounts.findOne({ _id: discountId });
+  if (!discount) {
+    throw new ApiError(400, "No discount found!!!");
+  }
+
+  const order = await Orders.findOne({ _id: orderId });
+  if (!order) {
+    throw new ApiError(400, "No order found!!!");
+  }
+
+  let amount = order.amount;
+  let discountedAmount = 0;
+
+  if (discount.method.toLowerCase() === "code") {
+  } else {
+  }
+
+  res.status(200).json(new ApiResponse(200, "Discount added!!!"));
+});
+
+const removeDiscount = asyncHandler(async (req, res) => {
+  const orderId = req.params;
+
+  if (!orderId) {
+    throw new ApiError(400, "Order id is required!!!");
+  }
+
+  const order = await Orders.findOne({ _id: orderId });
+  if (!order) {
+    throw new ApiError(400, "Order not found!!!");
+  }
+
+  const updatedOrder = await Orders.findByIdAndUpdate(
+    orderId,
+    { $set: { discountedAmount: null } },
+    { new: true }
+  );
+
+  if (!updatedOrder) {
+    throw new ApiError(500, "Something went wrong while updating the order!!!");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Order removed successfully!!!", updatedOrder));
 });
 
 export {

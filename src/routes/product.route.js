@@ -1,10 +1,12 @@
 import { Router } from "express";
 import {
+  addDiscount,
   createProduct,
   deleteProduct,
   getAllProducts,
   getProductsByCollectionId,
   getProductsByCollectionName,
+  removeDiscount,
   saveDraft,
   updateImage,
   updateMedium,
@@ -58,5 +60,7 @@ router.route("/get-by-collection-name").get(getProductsByCollectionName);
 router.route("/get-by-collection-id").get(getProductsByCollectionId);
 router.route("/delete/:id").get(verifyAdmin, deleteProduct);
 router.route("/save-draft/:id").get(verifyAdmin, saveDraft);
+router.route("/add-discount").get(verifyAdmin, addDiscount);
+router.route("/remove-discount/:id").get(verifyAdmin, removeDiscount);
 
 export default router;

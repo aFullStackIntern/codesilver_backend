@@ -9,6 +9,8 @@ import { Discounts } from "../models/discount.model.js";
 import { Reviews } from "../models/review.model.js";
 import { AmountOffPdtCode } from "../models/amountOffProductsCode.js";
 import { AmountOffPdtAuto } from "../models/amountOffProductsAuto.js";
+import moment from "moment";
+import mongoose from "mongoose";
 
 const createProduct = asyncHandler(async (req, res) => {
   const {
@@ -358,34 +360,108 @@ const addDiscount = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No discount found!!!");
   }
 
+  const typeId = new mongoose.Types.ObjectId(discount.typeId);
+
   let discountedPrice = 0;
   let price = product.price;
+  const now = moment().format("YYYY-MM-DD");
 
-  if (discount.method === "Code") {
-    const productDiscount = await AmountOffPdtCode.findOne({ _id: typeId });
+  if (discount.method.toLowerCase() === "code") {
+    const productDiscount = await AmountOffPdtCode.findOne({
+      _id: typeId,
+    });
+
     if (!productDiscount) {
       throw new ApiError(
         500,
         "Something went wrong while fetching the product discount!!!"
       );
     }
+    const start = moment(productDiscount.startTime).format("YYYY-MM-DD");
+    const end = moment(productDiscount.endTime).format("YYYY-MM-DD");
 
-    if (productDiscount.uses > 0) {
+    if (now < end && now > start) {
+      if (productDiscount.uses > 0) {
+        if (productDiscount.discountValueType === "Percent") {
+          discountedPrice =
+            price - price * 0.01 * productDiscount.discountValue;
+        } else if (productDiscount.discountValueType === "Amount") {
+          discountedPrice = price - productDiscount.discountValue;
+        }
+      }
+    } else {
+      throw new ApiError(400, "Discount not available right now!!!");
+    }
+  } else {
+    const productDiscount = await AmountOffPdtAuto.findOne({
+      _id: typeId,
+    });
+    if (!productDiscount) {
+      throw new ApiError(
+        500,
+        "Something went wrong while fetching the product discount!!!"
+      );
+    }
+    const start = moment(productDiscount.startTime, "YYYY-MM-DD");
+    const end = moment(productDiscount.endTime, "YYYY-MM-DD");
+
+    if (now < end && now > start) {
       if (productDiscount.discountValueType === "Percent") {
         discountedPrice = price - price * 0.01 * productDiscount.discountValue;
       } else if (productDiscount.discountValueType === "Amount") {
         discountedPrice = price - productDiscount.discountValue;
       }
     }
-  } else {
-    const productDiscount = await AmountOffPdtAuto.findOne({ _id: typeId });
-    if (!productDiscount) {
-      throw new ApiError(
-        500,
-        "Something went wrong while fetching the product discount!!!"
-      );
-    }
   }
+
+  const updatedProduct = await Products.findByIdAndUpdate(
+    productId,
+    {
+      $set: { discountedPrice },
+    },
+    { new: true }
+  );
+
+  if (!updatedProduct) {
+    throw new ApiError(
+      500,
+      "Something went wrong while updating the product!!!"
+    );
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Discount added!!!", updatedProduct));
+});
+
+const removeDiscount = asyncHandler(async (req, res) => {
+  const productId = req.params.id;
+
+  if (!productId) {
+    throw new ApiError(400, "Product Id is required!!!");
+  }
+
+  const product = await Products.findOne({ _id: productId });
+  if (!product) {
+    throw new ApiError(400, "Product not found!!!");
+  }
+
+  const updatedProduct = await Products.findByIdAndUpdate(
+    product._id,
+    { $set: { discountedPrice: null } },
+    { new: true }
+  );
+
+  if (!updatedProduct) {
+    throw new ApiError(
+      400,
+      "Something went wrong while updating the product!!!"
+    );
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Product updated!!!", updatedProduct));
 });
 
 export {
@@ -400,4 +476,5 @@ export {
   getProductsByCollectionId,
   deleteProduct,
   addDiscount,
+  removeDiscount,
 };

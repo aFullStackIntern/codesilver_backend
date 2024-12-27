@@ -19,6 +19,9 @@ const orderSchema = new Schema(
     amount: {
       type: Number,
     },
+    discountedAmount: {
+      type: Number,
+    },
     address: {
       type: String,
       required: true,
