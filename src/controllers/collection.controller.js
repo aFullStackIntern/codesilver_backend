@@ -159,6 +159,22 @@ const updateImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Image updated!!!", updatedCollection));
 });
 
+const getById = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  if (!id) {
+    throw new ApiError(400, "Id is required!!!");
+  }
+
+  const collection = await Collections.findOne({ _id: id });
+  if (!collection) {
+    throw new ApiError(400, "Collection not found!!!");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Collection fetched!!!", collection));
+});
+
 export {
   createCollection,
   getAllCollections,
@@ -166,4 +182,5 @@ export {
   deleteCollection,
   updateImage,
   getByTitle,
+  getById,
 };

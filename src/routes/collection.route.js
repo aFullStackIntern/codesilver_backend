@@ -4,6 +4,7 @@ import {
   createCollection,
   deleteCollection,
   getAllCollections,
+  getById,
   getByTitle,
   updateCollection,
   updateImage,
@@ -36,5 +37,6 @@ router.route("/get-all").get(getAllCollections);
 router.route("/get-by-title").get(getByTitle);
 router.route("/delete/:id").get(verifyAdmin, deleteCollection);
 router.route("/update/:id").post(verifyAdmin, updateCollection);
+router.route("/get-by-id/:id").get(getById);
 
 export default router;
