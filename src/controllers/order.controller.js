@@ -12,6 +12,7 @@ import { BuyXGetYCode } from "../models/buyXGetYCode.js";
 import { Collections } from "../models/collection.model.js";
 import { FreeShippingCode } from "../models/freeShippingCode.js";
 import { Zones } from "../models/shippingZone.model.js";
+import { Rates } from "../models/rate.model.js";
 
 const createOrder = asyncHandler(async (req, res) => {
   const customerId = req.customer._id;
@@ -669,13 +670,9 @@ const addShipping = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No orders found!!!");
   }
 
-  console.log(req.customer.countryCode);
-
   const shippingZone = await Zones.findOne({
-    countries: { $in: [req.customer.countryCode] },
+    countryCodes: { $in: [req.customer.countryCode] },
   });
-
-  console.log(shippingZone);
 
   if (!shippingZone) {
     throw new ApiError(
@@ -684,7 +681,10 @@ const addShipping = asyncHandler(async (req, res) => {
     );
   }
 
-  console.log(shippingZone);
+  const rate = await Rates.findOne({ _id: shippingZone.rates[0] });
+  if (!rate) {
+    throw new ApiError(500, "Something went wrong while fetching the rates!!!");
+  }
 
   const discount = await Discounts.findOne({ _id: discountId });
   if (!discount) {
@@ -693,6 +693,7 @@ const addShipping = asyncHandler(async (req, res) => {
 
   const typeId = new mongoose.Types.ObjectId(discount.typeId);
 
+  let shippingRate = rate.price;
   let amount = order.amount;
   let discountedAmount = 0;
   const now = moment().format("YYYY-MM-DD");
@@ -702,6 +703,15 @@ const addShipping = asyncHandler(async (req, res) => {
     if (!shippingDiscount) {
       throw new ApiError(400, "No shipping discount found!!!");
     }
+
+    if (amount >= Number(shippingDiscount.minPurchaseRequirementValue)) {
+      amount =
+        amount + shippingRate - Number(shippingDiscount.shippingRatesExclusion);
+    }
+
+    console.log(amount);
+
+    console.log(shippingDiscount);
   } else {
   }
 
