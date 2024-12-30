@@ -14,6 +14,8 @@ import {
   addDiscount,
   removeDiscount,
   addBuyXGetY,
+  addProduct,
+  addShipping,
 } from "../controllers/order.controller.js";
 import { verifyAdmin } from "../middlewares/adminAuth.middleware.js";
 import { verifyCustomer } from "../middlewares/customerAuth.middleware.js";
@@ -34,5 +36,7 @@ router.route("/delete/:id").get(deleteOrder);
 router.route("/add-discount").post(addDiscount);
 router.route("/remove-discount/:id").get(removeDiscount);
 router.route("/add-buyget").post(addBuyXGetY);
+router.route("/add-products").post(verifyCustomer, addProduct);
+router.route("/add-shipping").post(verifyCustomer, addShipping);
 
 export default router;

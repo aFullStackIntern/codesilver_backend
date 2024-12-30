@@ -10,6 +10,8 @@ import { Products } from "../models/product.model.js";
 import mongoose from "mongoose";
 import { BuyXGetYCode } from "../models/buyXGetYCode.js";
 import { Collections } from "../models/collection.model.js";
+import { FreeShippingCode } from "../models/freeShippingCode.js";
+import { Zones } from "../models/shippingZone.model.js";
 
 const createOrder = asyncHandler(async (req, res) => {
   const customerId = req.customer._id;
@@ -78,6 +80,41 @@ const getOrders = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json(new ApiResponse(200, "Orders fetched!!!", orders));
+});
+
+const addProduct = asyncHandler(async (req, res) => {
+  const { products } = req.body;
+  if (!products) {
+    throw new ApiError(400, "Add products to add products!!!");
+  }
+
+  if (!req.query.id) {
+    throw new ApiError(400, "Order id is required!!!");
+  }
+
+  const order = await Orders.findOne({ _id: req.query.id });
+  if (!order) {
+    throw new ApiError(400, "Order not found!!!");
+  }
+
+  const newProducts = order.products;
+
+  for (let i = 0; i < products.length; i++) {
+    newProducts.push(products[i]);
+  }
+
+  const updatedOrder = await Orders.findByIdAndUpdate(
+    order,
+    { $set: { products: newProducts } },
+    { new: true }
+  );
+  if (!updatedOrder) {
+    throw new ApiError(500, "Something went wrong while updating the error!!!");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Product added successfully!!!", updatedOrder));
 });
 
 const updateProgress = asyncHandler(async (req, res) => {
@@ -422,24 +459,253 @@ const addBuyXGetY = asyncHandler(async (req, res) => {
     if (now < end && now > start) {
       if (buyDiscount.usesPerOrder > 0) {
         if (buyDiscount.customerBuys.toLowerCase() === "quantity") {
-          const collection = await Collections.findOne({
+          const appliedOnCollection = await Collections.findOne({
             _id: buyDiscount.appliedTo,
           });
-          if (!collection) {
+          if (!appliedOnCollection) {
             throw new ApiError(400, "No collections found!!!");
           }
-        } else if (buyDiscount.customerBuys.toLowerCase() === "quantity") {
+          let items = [];
+
+          for (let i = 0; i < order.products.length; i++) {
+            const productBought = await Products.findOne({
+              _id: order.products[i],
+            });
+            if (!productBought) {
+              throw new ApiError(400, "Product not available!!!");
+            }
+
+            const productCollection = productBought.collectionId;
+
+            if (productCollection.equals(appliedOnCollection._id)) {
+              items.push(productBought._id);
+            }
+          }
+
+          if (
+            Number(buyDiscount.customerBuysQnt) + buyDiscount.customerGetQnt <=
+            items.length
+          ) {
+            discountedAmount = amount;
+            for (let j = 0; j < buyDiscount.customerGetQnt; j++) {
+              const freeProduct = await Products.findOne({ _id: items[j] });
+
+              discountedAmount -=
+                freeProduct.discountedPrice || freeProduct.price;
+            }
+          } else if (
+            Number(buyDiscount.customerBuysQnt) + buyDiscount.customerGetQnt >
+            items.length
+          ) {
+            throw new ApiError(400, "Add more items to get discount!!!");
+          }
+        } else if (buyDiscount.customerBuys.toLowerCase() === "amount") {
+          const appliedOnCollection = await Collections.findOne({
+            _id: buyDiscount.appliedTo,
+          });
+          if (!appliedOnCollection) {
+            throw new ApiError(400, "No collections found!!!");
+          }
+          let items = [];
+          const amountBought = 0;
+
+          for (let i = 0; i < order.products.length; i++) {
+            const productBought = await Products.findOne({
+              _id: order.products[i],
+            });
+            if (!productBought) {
+              throw new ApiError(400, "Product not available!!!");
+            }
+
+            const productCollection = productBought.collectionId;
+
+            if (productCollection.equals(appliedOnCollection._id)) {
+              amountBought +=
+                productBought.discountedPrice || productBought.price;
+            }
+          }
+
+          if (Number(buyDiscount.customerBuysQnt) <= amountBought) {
+            discountedAmount = amount;
+            for (let j = 0; j < buyDiscount.customerGetQnt; j++) {
+              const freeProduct = await Products.findOne({ _id: items[j] });
+
+              discountedAmount -=
+                freeProduct.discountedPrice || freeProduct.price;
+            }
+          } else if (
+            Number(buyDiscount.customerBuysQnt) + buyDiscount.customerGetQnt >
+            items.length
+          ) {
+            throw new ApiError(400, "Add more items to get discount!!!");
+          }
         }
       }
     } else {
       throw new ApiError(400, "Discount not available right now!!!");
     }
   } else {
+    const buyDiscount = await BuyXGetYAuto.findOne({ _id: typeId });
+    if (!buyDiscount) {
+      throw new ApiError(400, "Discount not found!!!");
+    }
+
+    const start = moment(buyDiscount.startTime).format("YYYY-MM-DD");
+    const end = moment(buyDiscount.endTime).format("YYYY-MM-DD");
+
+    if (now < end && now > start) {
+      if (buyDiscount.usesPerOrder > 0) {
+        if (buyDiscount.customerBuys.toLowerCase() === "quantity") {
+          const appliedOnCollection = await Collections.findOne({
+            _id: buyDiscount.appliedTo,
+          });
+          if (!appliedOnCollection) {
+            throw new ApiError(400, "No collections found!!!");
+          }
+          let items = [];
+
+          for (let i = 0; i < order.products.length; i++) {
+            const productBought = await Products.findOne({
+              _id: order.products[i],
+            });
+            if (!productBought) {
+              throw new ApiError(400, "Product not available!!!");
+            }
+
+            const productCollection = productBought.collectionId;
+
+            if (productCollection.equals(appliedOnCollection._id)) {
+              items.push(productBought._id);
+            }
+          }
+
+          if (
+            Number(buyDiscount.customerBuysQnt) + buyDiscount.customerGetQnt <=
+            items.length
+          ) {
+            discountedAmount = amount;
+            for (let j = 0; j < buyDiscount.customerGetQnt; j++) {
+              const freeProduct = await Products.findOne({ _id: items[j] });
+
+              discountedAmount -=
+                freeProduct.discountedPrice || freeProduct.price;
+            }
+          } else if (
+            Number(buyDiscount.customerBuysQnt) + buyDiscount.customerGetQnt >
+            items.length
+          ) {
+            throw new ApiError(400, "Add more items to get discount!!!");
+          }
+        } else if (buyDiscount.customerBuys.toLowerCase() === "amount") {
+          const appliedOnCollection = await Collections.findOne({
+            _id: buyDiscount.appliedTo,
+          });
+          if (!appliedOnCollection) {
+            throw new ApiError(400, "No collections found!!!");
+          }
+          let items = [];
+          const amountBought = 0;
+
+          for (let i = 0; i < order.products.length; i++) {
+            const productBought = await Products.findOne({
+              _id: order.products[i],
+            });
+            if (!productBought) {
+              throw new ApiError(400, "Product not available!!!");
+            }
+
+            const productCollection = productBought.collectionId;
+
+            if (productCollection.equals(appliedOnCollection._id)) {
+              amountBought +=
+                productBought.discountedPrice || productBought.price;
+            }
+          }
+
+          if (Number(buyDiscount.customerBuysQnt) <= amountBought) {
+            discountedAmount = amount;
+            for (let j = 0; j < buyDiscount.customerGetQnt; j++) {
+              const freeProduct = await Products.findOne({ _id: items[j] });
+
+              discountedAmount -=
+                freeProduct.discountedPrice || freeProduct.price;
+            }
+          } else if (
+            Number(buyDiscount.customerBuysQnt) + buyDiscount.customerGetQnt >
+            items.length
+          ) {
+            throw new ApiError(400, "Add more items to get discount!!!");
+          }
+        }
+      }
+    } else {
+      throw new ApiError(400, "Discount not available right now!!!");
+    }
   }
+
+  const updatedOrder = await Orders.findByIdAndUpdate(
+    orderId,
+    {
+      $set: { discountedAmount },
+    },
+    { new: true }
+  );
 
   res
     .status(200)
-    .json(new ApiResponse(200, "Discount applied successfully!!!"));
+    .json(
+      new ApiResponse(200, "Discount applied successfully!!!", updatedOrder)
+    );
+});
+
+const addShipping = asyncHandler(async (req, res) => {
+  const { orderId, discountId } = req.body;
+  if (!orderId || !discountId) {
+    throw new ApiError(400, "Order id and discount id is required!!!");
+  }
+
+  const order = await Orders.findOne({ _id: orderId });
+  if (!order) {
+    throw new ApiError(400, "No orders found!!!");
+  }
+
+  console.log(req.customer.countryCode);
+
+  const shippingZone = await Zones.findOne({
+    countries: { $in: [req.customer.countryCode] },
+  });
+
+  console.log(shippingZone);
+
+  if (!shippingZone) {
+    throw new ApiError(
+      500,
+      "Something went wrong while fetching the shipping zone!!!"
+    );
+  }
+
+  console.log(shippingZone);
+
+  const discount = await Discounts.findOne({ _id: discountId });
+  if (!discount) {
+    throw new ApiError(400, "No discount found!!!");
+  }
+
+  const typeId = new mongoose.Types.ObjectId(discount.typeId);
+
+  let amount = order.amount;
+  let discountedAmount = 0;
+  const now = moment().format("YYYY-MM-DD");
+
+  if (discount.method.toLowerCase() === "code") {
+    const shippingDiscount = await FreeShippingCode.findOne({ _id: typeId });
+    if (!shippingDiscount) {
+      throw new ApiError(400, "No shipping discount found!!!");
+    }
+  } else {
+  }
+
+  res.status(200).json(new ApiResponse(200, "Shipping added!!!"));
 });
 
 export {
@@ -457,4 +723,6 @@ export {
   addDiscount,
   removeDiscount,
   addBuyXGetY,
+  addProduct,
+  addShipping,
 };
