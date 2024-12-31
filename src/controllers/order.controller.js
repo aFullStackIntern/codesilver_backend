@@ -13,6 +13,7 @@ import { Collections } from "../models/collection.model.js";
 import { FreeShippingCode } from "../models/freeShippingCode.js";
 import { Zones } from "../models/shippingZone.model.js";
 import { Rates } from "../models/rate.model.js";
+import { FreeShippingAuto } from "../models/freeShippingAuto.js";
 
 const createOrder = asyncHandler(async (req, res) => {
   const customerId = req.customer._id;
@@ -695,7 +696,7 @@ const addShipping = asyncHandler(async (req, res) => {
 
   let shippingRate = rate.price;
   let amount = order.amount;
-  let discountedAmount = 0;
+  let discountedShipping = 0;
   const now = moment().format("YYYY-MM-DD");
 
   if (discount.method.toLowerCase() === "code") {
@@ -704,18 +705,85 @@ const addShipping = asyncHandler(async (req, res) => {
       throw new ApiError(400, "No shipping discount found!!!");
     }
 
-    if (amount >= Number(shippingDiscount.minPurchaseRequirementValue)) {
-      amount =
-        amount + shippingRate - Number(shippingDiscount.shippingRatesExclusion);
+    const start = moment(shippingDiscount.startTime).format("YYYY-MM-DD");
+    const end = moment(shippingDiscount.endTime).format("YYYY-MM-DD");
+
+    if (now <= end && now >= start) {
+      if (shippingDiscount.uses > 0) {
+        if (amount >= Number(shippingDiscount.minPurchaseRequirementsValue)) {
+          discountedShipping =
+            shippingRate - Number(shippingDiscount.shippingRatesExclusion);
+        } else {
+          let msg = `To get discount spend ${amount - Number(shippingDiscount.minPurchaseRequirementsValue)}`;
+          throw new ApiError(400, msg);
+        }
+      } else {
+        throw new ApiError(400, "You have no discounts available!!!");
+      }
+    } else {
+      throw new ApiError(400, "Discount is not available right now!!!");
     }
-
-    console.log(amount);
-
-    console.log(shippingDiscount);
   } else {
+    const shippingDiscount = await FreeShippingAuto.findOne({ _id: typeId });
+    if (!shippingDiscount) {
+      throw new ApiError(400, "No shipping discount found!!!");
+    }
+    if (amount >= Number(shippingDiscount.minPurchaseRequirementsValue)) {
+      discountedShipping =
+        shippingRate - Number(shippingDiscount.shippingRatesExclusion);
+    } else {
+      let msg = `To get discount spend ${amount - Number(shippingDiscount.minPurchaseRequirementsValue)}`;
+      throw new ApiError(400, msg);
+    }
   }
 
-  res.status(200).json(new ApiResponse(200, "Shipping added!!!"));
+  const updatedOrder = await Orders.findByIdAndUpdate(
+    orderId,
+    {
+      $set: {
+        shippingDiscount: discountedShipping,
+        amount: amount - discountedShipping,
+      },
+    },
+    { new: true }
+  );
+
+  if (!updatedOrder) {
+    throw new ApiError(500, "Something went wrong while updating the order!!!");
+  }
+
+  res.status(200).json(new ApiResponse(200, "Shipping added!!!", updatedOrder));
+});
+
+const removeShipping = asyncHandler(async (req, res) => {
+  const { orderId } = req.query;
+  if (!orderId) {
+    throw new ApiError(400, "Order id is required!!!");
+  }
+
+  const order = await Orders.findOne({ _id: orderId });
+  if (!order) {
+    throw new ApiError(400, "Order id not found!!!");
+  }
+
+  let amount = order.amount;
+  if (order.shippingDiscount) {
+    amount += order.shippingDiscount;
+  }
+
+  const updatedOrder = await Orders.findByIdAndUpdate(
+    orderId,
+    { $set: { shippingDiscount: null, amount } },
+    { new: true }
+  );
+
+  if (!updatedOrder) {
+    throw new ApiError(500, "Something went wrong while updating the order!!!");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Shipping discount removed!!!", updatedOrder));
 });
 
 export {
@@ -735,4 +803,5 @@ export {
   addBuyXGetY,
   addProduct,
   addShipping,
+  removeShipping,
 };

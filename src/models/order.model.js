@@ -64,6 +64,9 @@ const orderSchema = new Schema(
       type: [mongoose.Schema.ObjectId],
       ref: "Product",
     },
+    shippingDiscount: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );
