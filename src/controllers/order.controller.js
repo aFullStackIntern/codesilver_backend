@@ -35,6 +35,7 @@ const createOrder = asyncHandler(async (req, res) => {
     isCompleted,
     isPaid,
     isFullfilled,
+    multipleShipping,
     isDelivered,
     products,
   } = req.body;
@@ -786,6 +787,32 @@ const removeShipping = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Shipping discount removed!!!", updatedOrder));
 });
 
+const updateMultipleShipping = asyncHandler(async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    throw new ApiError(400, "Id is required!!!");
+  }
+
+  const { multipleShipping } = req.body;
+  console.log(req.body);
+  if (!Array.isArray(multipleShipping) || multipleShipping.length === 0) {
+    throw new ApiError(400, "Addresses are required!!!");
+  }
+
+  const updatedShipping = await Orders.findByIdAndUpdate(
+    id,
+    { $set: req.body },
+    { new: true }
+  );
+  if (!updatedShipping) {
+    throw new ApiError(500, "Something went wrong while updating the Order!!!");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Shipping address updated!!!", updatedShipping));
+});
+
 export {
   createOrder,
   getAllOrders,
@@ -804,4 +831,5 @@ export {
   addProduct,
   addShipping,
   removeShipping,
+  updateMultipleShipping,
 };

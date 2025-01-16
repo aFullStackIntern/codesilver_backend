@@ -64,6 +64,9 @@ const orderSchema = new Schema(
       type: [mongoose.Schema.ObjectId],
       ref: "Product",
     },
+    multipleShipping: {
+      type: [String],
+    },
     shippingDiscount: {
       type: Number,
     },

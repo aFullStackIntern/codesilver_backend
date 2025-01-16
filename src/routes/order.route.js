@@ -16,6 +16,7 @@ import {
   addBuyXGetY,
   addProduct,
   addShipping,
+  updateMultipleShipping,
 } from "../controllers/order.controller.js";
 import { verifyAdmin } from "../middlewares/adminAuth.middleware.js";
 import { verifyCustomer } from "../middlewares/customerAuth.middleware.js";
@@ -38,5 +39,8 @@ router.route("/remove-discount/:id").get(removeDiscount);
 router.route("/add-buyget").post(addBuyXGetY);
 router.route("/add-products").post(verifyCustomer, addProduct);
 router.route("/add-shipping").post(verifyCustomer, addShipping);
+router
+  .route("/update-multiple-shipping")
+  .post(verifyCustomer, updateMultipleShipping);
 
 export default router;

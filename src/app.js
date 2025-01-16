@@ -41,6 +41,7 @@ import wishlistRouter from "./routes/wishlist.route.js";
 import viewedRouter from "./routes/viewed.route.js";
 import giftRouter from "./routes/gift.route.js";
 import hamperRouter from "./routes/hamper.route.js";
+import photoFrameRouter from "./routes/photoFrame.route.js";
 
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/customer", customerRouter);
@@ -67,5 +68,6 @@ app.use("/api/v1/wishlist", wishlistRouter);
 app.use("/api/v1/viewed", viewedRouter);
 app.use("/api/v1/gifts", giftRouter);
 app.use("/api/v1/hampers", hamperRouter);
+app.use("/api/v1/photoFrame", photoFrameRouter);
 
 export default app;
