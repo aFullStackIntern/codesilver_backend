@@ -35,12 +35,12 @@ const createPhotoFrame = asyncHandler(async (req, res) => {
 });
 
 const getPhotoFrame = asyncHandler(async (req, res) => {
-  const { productId } = req.query.id;
-  if (!productId) {
-    throw new ApiError(400, "Product id is required!!!");
+  const frameId = req.query.id;
+  if (!frameId) {
+    throw new ApiError(400, "Frame id is required!!!");
   }
 
-  const photoFrame = await PhotoFrames.findOne({ productId });
+  const photoFrame = await PhotoFrames.findOne({ _id: frameId });
   if (!photoFrame) {
     throw new ApiError(400, "No photo frame found");
   }
@@ -50,4 +50,51 @@ const getPhotoFrame = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Photo frame fetched!!!", photoFrame));
 });
 
-export { createPhotoFrame, getPhotoFrame };
+const deletePhotoFrame = asyncHandler(async (req, res) => {
+  const frameId = req.query.id;
+  if (!frameId) {
+    throw new ApiError(400, "Frame id is required!!!");
+  }
+
+  const deletedFrame = await PhotoFrames.findByIdAndDelete(frameId);
+  if (!deletedFrame) {
+    throw new ApiError(500, "Something went wrong while deleting the frame!!!");
+  }
+
+  res.status(200).json(new ApiResponse(200, "Photo frame deleted!!!"));
+});
+
+const updateImage = asyncHandler(async (req, res) => {
+  const frameId = req.query.id;
+  if (!frameId) {
+    throw new ApiError(400, "Frame id is required!!!");
+  }
+
+  const localFilePath = req.files?.image[0]?.path;
+  if (!localFilePath) {
+    throw new ApiError(400, "Image is required!!!");
+  }
+
+  const image = await uploadOnCloudinary(localFilePath);
+  if (!image) {
+    throw new ApiError(500, "Something went wrong while updating the image!!!");
+  }
+
+  const photoFrame = await PhotoFrames.findByIdAndUpdate(
+    frameId,
+    { $set: { image: image.url } },
+    { new: true }
+  );
+  if (!photoFrame) {
+    throw new ApiError(
+      500,
+      "Something went wrong while updating the photoframe!!!"
+    );
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Photo frame updated!!!", photoFrame));
+});
+
+export { createPhotoFrame, getPhotoFrame, deletePhotoFrame, updateImage };

@@ -464,6 +464,18 @@ const removeDiscount = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Product updated!!!", updatedProduct));
 });
 
+const removePhotoFrame = asyncHandler(async (req, res) => {
+  const productId = req.query.id;
+
+  if (!productId) {
+    throw new ApiError(200, "Product id is required!!!");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Photo frame removed successfullly!!!"));
+});
+
 export {
   saveDraft,
   createProduct,
