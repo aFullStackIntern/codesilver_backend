@@ -26,6 +26,8 @@ const createProduct = asyncHandler(async (req, res) => {
     discountId,
   } = req.body;
 
+  console.log(req.body);
+
   if (
     !name ||
     !weight ||

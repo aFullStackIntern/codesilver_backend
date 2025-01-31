@@ -163,6 +163,15 @@ const getCart = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "Cart found!!!", cart));
 });
 
+const getAllCarts = asyncHandler(async (req, res) => {
+  const cart = await Cart.find();
+  if (!cart) {
+    throw new ApiError(400, "No carts found!!!");
+  }
+
+  res.status(200).json(new ApiResponse(200, "Carts found!!!", cart));
+});
+
 const deleteCart = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ customerId: req.customer._id });
   if (!cart) {
@@ -331,4 +340,5 @@ export {
   addHamper,
   removeHamper,
   changeHamper,
+  getAllCarts,
 };

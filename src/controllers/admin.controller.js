@@ -143,16 +143,11 @@ const updateAdmin = asyncHandler(async (req, res) => {
 });
 
 const changePassword = asyncHandler(async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
+  const { password } = req.body;
 
   const admin = await Admin.findById(req.admin?._id);
-  const isPasswordCorrect = await admin.isPasswordCorrect(oldPassword);
 
-  if (!isPasswordCorrect) {
-    throw new ApiError(400, "Invalid old password");
-  }
-
-  admin.password = newPassword;
+  admin.password = password;
   await admin.save({ validateBeforeSave: false });
 
   return res
