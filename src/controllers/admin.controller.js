@@ -23,8 +23,8 @@ const generateAccessAndRefreshTokens = async (adminId) => {
 };
 
 const createAdmin = asyncHandler(async (req, res) => {
-  const { username, password, email } = req.body;
-  if (!username || !password || !email) {
+  const { username, password, email, menu } = req.body;
+  if (!username || !password || !email || !menu) {
     throw new ApiError(400, "Please fill all the required fields!!!");
   }
 
@@ -180,10 +180,22 @@ const logoutAdmin = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "User logged out"));
 });
 
+const getAdmin = asyncHandler(async (req, res) => {
+  const currAdmin = await Admin.findOne({ _id: req.admin._id });
+  if (!currAdmin) {
+    throw new ApiError(400, "No admin found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Admin fetched successfully", currAdmin));
+});
+
 export {
   createAdmin,
   getAllAdmins,
   deleteAdmin,
+  getAdmin,
   login,
   updateAdmin,
   changePassword,

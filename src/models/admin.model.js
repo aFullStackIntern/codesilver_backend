@@ -21,6 +21,9 @@ const adminSchema = new Schema(
       required: true,
       trim: true,
     },
+    menu: {
+      type: [String],
+    },
     refreshToken: {
       type: String,
     },
